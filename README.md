@@ -1,6 +1,6 @@
-# 🌿 SPORA
+# SPORA
 
-**Spore-Polymer Observation & Recovery Analysis**  
+**Spora-Polymer Observation & Recovery Analysis**  
 *Computational polymer degradation pipeline — Hyphae Composites*
 
 ---
