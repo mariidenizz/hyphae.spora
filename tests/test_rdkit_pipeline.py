@@ -22,14 +22,14 @@ from spora.rdkit_pipeline.descriptors import compute_descriptors
 
 def test_build_polymer_smiles_returns_string():
     """build_polymer_smiles should always return a non-empty string."""
-    result = build_polymer_smiles("CC(OC(=O))n", n_repeat=10)
+    result = build_polymer_smiles("CC(OC(=O)O)", n_repeat=10)
     assert isinstance(result, str)
     assert len(result) > 0
 
 
 def test_build_polymer_smiles_is_valid_rdkit_mol():
     """The SMILES returned by build_polymer_smiles should parse into a valid RDKit molecule."""
-    smiles = build_polymer_smiles("CC(OC(=O))n", n_repeat=10)
+    smiles = build_polymer_smiles("CC(OC(=O)O)", n_repeat=10)
     mol = Chem.MolFromSmiles(smiles)
     assert mol is not None, f"RDKit could not parse SMILES: {smiles}"
 

@@ -103,12 +103,24 @@ def insert_descriptors_batch(df: pd.DataFrame) -> None:
     conn.commit()
 
 
+def _query_to_df(sql: str, params: tuple) -> pd.DataFrame:
+    """
+    Execute a SELECT query using psycopg2 and return results as a DataFrame.
+    Avoids pd.read_sql() which pulls in sqlite3 and conflicts with Conda environments.
+    """
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        cols = [desc[0] for desc in cur.description]
+    return pd.DataFrame(rows, columns=cols)
+
+
 def get_run_summary(label: str) -> pd.DataFrame:
     """
     Return aggregated molecular descriptor statistics for a completed run.
     Useful for quickly checking whether an experiment produced sensible results.
     """
-    conn = get_conn()
     sql = """
         SELECT
             d.time_step,
@@ -123,7 +135,7 @@ def get_run_summary(label: str) -> pd.DataFrame:
         GROUP BY d.time_step
         ORDER BY d.time_step
     """
-    return pd.read_sql(sql, conn, params=(label,))
+    return _query_to_df(sql, (label,))
 
 
 def compare_runs(label_a: str, label_b: str) -> pd.DataFrame:
@@ -138,7 +150,6 @@ def compare_runs(label_a: str, label_b: str) -> pd.DataFrame:
 
 def get_latest_runs(n: int = 10) -> pd.DataFrame:
     """Return the n most recently completed experiments as a DataFrame."""
-    conn = get_conn()
     sql = """
         SELECT e.label, p.name AS polymer, dm.code AS mechanism,
                e.temperature_c, e.masterbatch_pct, e.status, e.finished_at
@@ -149,4 +160,4 @@ def get_latest_runs(n: int = 10) -> pd.DataFrame:
         ORDER BY e.finished_at DESC
         LIMIT %s
     """
-    return pd.read_sql(sql, conn, params=(n,))
+    return _query_to_df(sql, (n,))
